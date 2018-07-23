@@ -1,5 +1,5 @@
 import { IHttpService } from "./http-service";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, Subject } from "rxjs";
 import 'rxjs/add/operator/first';
 
 export type IPath = string[];
@@ -248,6 +248,7 @@ export class Resource<I extends IResource> {
     }
 
     commit() {
+        const commit$ = new Subject<I | null>();
         Resource
             .http
             .patch<I>(this.getLink('self'), this._changeSet)
@@ -255,26 +256,37 @@ export class Resource<I extends IResource> {
             .then(data => {
                 this.clearChangeSet();
                 this.data = data;
+                commit$.next(data);
+                commit$.complete();
             });
+            return commit$;
     }
 
     refresh() {
+        const refresh$ = new Subject<I | null>();
         Resource
             .http
             .get<I>(this.getLink('self'))
             .toPromise()
             .then(data => {
                 this.data = data;
+                refresh$.next(data);
+                refresh$.complete();
             });
+        return refresh$    
     }
 
     delete() {
+        const delete$ = new Subject<I | null>();
         Resource
             .http
             .delete<I>(this.getLink('self'))
             .toPromise()
             .then(data => {
                 this.data = data;
+                delete$.next(data);
+                delete$.complete();
             });
+        return delete$  ;      
     }
 }
