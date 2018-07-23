@@ -1,6 +1,6 @@
 {
   "name": "@knaydenov/hal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Base classes for HAL API consuming model.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
