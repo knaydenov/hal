@@ -7,6 +7,7 @@ export interface IConfig {
     http: IHttpService;
     storage: Storage;
     prefix?: string;
+    dumpInterval?: number;
 }
 
 export class Hal {
@@ -15,7 +16,11 @@ export class Hal {
 
     static init(config: IConfig) {
         Hal._http = config.http;
-        Hal._storage = new HalStorage(config.storage, config.prefix ? config.prefix : '');
+        Hal._storage = new HalStorage({
+            storage: config.storage, 
+            prefix: config.prefix ? config.prefix : '',
+            dumpInterval: config.dumpInterval ? config.dumpInterval : 5000, // 5 sec
+        });
     }
 
     static follow(url: string, options?: any, alias?: string) {
