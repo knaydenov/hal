@@ -118,6 +118,9 @@ export class HalStorage {
             .resolveEmbeddedResources(data)
             .forEach(embedded => {
                 this.attach(embedded.data._links.self.href, Hal.resolveEmbeddedName(origin, embedded.key));
+                this.getAliases(origin).forEach(alias => {
+                    this.attach(embedded.data._links.self.href, Hal.resolveEmbeddedName(alias, embedded.key));
+                });
                 this.setItem(embedded.data._links.self.href, embedded.data);
             });
     }
@@ -140,7 +143,7 @@ export class HalStorage {
             .filter(alias => this.aliases[alias] === origin)
     } 
 
-    private static resolveEmbeddedResources(data: IResource): {key: string; data: IResource}[] {
+    static resolveEmbeddedResources(data: IResource): {key: string; data: IResource}[] {
         if (!data._embedded) {
             return [];
         }
