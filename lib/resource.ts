@@ -1,5 +1,5 @@
 import { Hal } from './hal';
-import { Subject, ReplaySubject } from 'rxjs';
+import { Subject, ReplaySubject, BehaviorSubject } from 'rxjs';
 import 'rxjs/add/operator/first';
 
 export interface ILink {
@@ -24,6 +24,7 @@ export interface IChangeSet {
 export class Resource<I extends IResource> {
     private _data$: ReplaySubject<I> = new ReplaySubject<I>(1);
     private _data: I | null = null;
+    private _isLoading$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
     protected _alias: string;
 
     protected _changeSet: IChangeSet = {};
@@ -38,6 +39,7 @@ export class Resource<I extends IResource> {
             });
 
         this._data$.subscribe(data => {
+            this.isLoading = false;
             this._data = data;
         });
 
@@ -94,6 +96,8 @@ export class Resource<I extends IResource> {
     commit() {
         const commit$ = new Subject<I>();
         const url = this.getLink('self');
+        
+        this.isLoading = true;
         Hal
             .http
             .patch(url, this._changeSet)
@@ -121,6 +125,7 @@ export class Resource<I extends IResource> {
             .filter(origin => Hal.resloveBaseUrl(origin) === this.baseUrl)
             .forEach(origin => Hal.removeItem(origin) );
 
+        this.isLoading = true;
         Hal
             .http
             .get(url, this._changeSet)
@@ -139,6 +144,8 @@ export class Resource<I extends IResource> {
     delete() {
         const delete$ = new Subject<any>();
         const url = this.getLink('self');
+
+        this.isLoading = true;
         Hal
             .http
             .delete(url)
@@ -171,6 +178,14 @@ export class Resource<I extends IResource> {
 
     get hasData() {
         return !!this._data;
+    }
+
+    set isLoading(isLoading: boolean) {
+        this._isLoading$.next(isLoading);
+    }
+
+    get isLoading() {
+        return this._isLoading$.value;
     }
 
     hasLink(rel: string) {
