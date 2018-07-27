@@ -169,6 +169,8 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
 
     commit() {
         const commit$ = new Subject<IPageableResource>();
+
+        this.isLoading = true;
         Hal
             .http
             .get<IPageableResource>(this.resolveUrl())
@@ -185,6 +187,8 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
 
     navigateFirst() {
         const commit$ = new Subject<IPageableResource>();
+
+        this.isLoading = true;
         Hal
             .http
             .get<IPageableResource>(this.getLink('first'))
@@ -201,6 +205,8 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
 
     navigatePrevious() {
         const commit$ = new Subject<IPageableResource>();
+
+        this.isLoading = true;
         Hal
             .http
             .get<IPageableResource>(this.getLink('previous'))
@@ -217,6 +223,8 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
 
     navigateNext() {
         const commit$ = new Subject<IPageableResource>();
+
+        this.isLoading = true;
         Hal
             .http
             .get<IPageableResource>(this.getLink('next'))
@@ -233,6 +241,8 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
 
     navigateLast() {
         const commit$ = new Subject<IPageableResource>();
+
+        this.isLoading = true;
         Hal
             .http
             .get<IPageableResource>(this.getLink('last'))
