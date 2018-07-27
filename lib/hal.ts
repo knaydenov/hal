@@ -33,6 +33,8 @@ export class Hal {
                     Hal._storage.attach(data._links.self.href, alias);
                 }
                 Hal._storage.attach(data._links.self.href, url);
+                Hal._storage.attach(data._links.self.href, data._links.self.href);
+
                 Hal._storage.setItem(data._links.self.href, data);
             });
     }
