@@ -89,6 +89,13 @@ export class Resource<I extends IResource> {
         return <T>resource;
     }
 
+    static fromData<T extends Resource<IResource>>(data: IResource): T {
+        const resource = new this(data._links.self.href);
+        Hal.attach(data._links.self.href, data._links.self.href);
+        Hal.setItem(data._links.self.href, data);
+        return <T>resource;
+    }
+
     revert() {
         this.clearChangeSet();
     }
