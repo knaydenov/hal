@@ -1,8 +1,7 @@
-import { Resource, IResource } from "./resource";
+import { IResource, IChangeSet, Resource } from "./resource";
 import { ICollectionResource } from "./collection-resource";
-import { BehaviorSubject } from "rxjs/BehaviorSubject";
-import { Subject } from "rxjs/Subject";
-import { Observable } from "rxjs/Observable";
+import { Subject, BehaviorSubject } from "rxjs";
+import { Hal } from "./hal";
 import * as queryString from 'query-string';
 
 export interface ISort {
@@ -23,7 +22,7 @@ export interface IOptions {
     filters: IFilter[];
 }
 
-export interface IOptionsChangeSet {
+export interface IOptionsChangeSet extends IChangeSet {
     page?: number;
     limit?: number;
     sort?: ISort[];
@@ -63,43 +62,48 @@ export interface IPageableResource extends ICollectionResource {
     };
 }
 
-export class PageableResource<T extends Resource<IResource>> extends Resource<IPageableResource> {
-    private _itemConstructor: (new (name: string) => T) | undefined;
-    private _items$: BehaviorSubject<T[]> = new BehaviorSubject<T[]>([]);
+export class PageableResource<T extends Resource<IResource>> extends Resource<IPageableResource> { 
+    protected _changeSet: IOptionsChangeSet = {};
+    protected _items: T[] = [];
+
     private _options: IOptions = {
         page: 1,
         limit: 10,
         sort: [],
         filters: []
     };
-    protected _changeSet: IOptionsChangeSet = {};
-
     private _options$: Subject<IOptions> = new Subject<IOptions>();
 
-    constructor(name: string) {
-        super(name);
+    private _itemConstructor: (new (alias: string) => T) | undefined;
+    private _items$: BehaviorSubject<T[]> = new BehaviorSubject<T[]>([]);
+    
+    constructor(alias: string) {
+        super(alias);
         this.data$.subscribe(data => {
             if (data) {
                 this.options = this.resloveOptions(data._links.self.href);
-                this.items$.next(this.items);
             }
         });
     }
 
-    setItemConstructor(itemConstructor: new (name: string) => T) {
+    setItemConstructor(itemConstructor: new (alias: string) => T) {
         this._itemConstructor = itemConstructor;
+        this.data$.subscribe(data => {
+            this._items = data._embedded.items.map(item => this.itemInstance(item._links.self.href));
+            this.items$.next(this.items);
+            data._embedded.items.forEach(item => {
+                Hal.attach(item._links.self.href, item._links.self.href);
+                Hal.setItem(item._links.self.href, item);
+            });
+        });
         return this;
     }
 
-    itemInstance(name: string): T {
-        let resource: T = <T>Resource.get(name);
-        if (!resource) {
-            if (!this._itemConstructor) {
-                throw new Error('Item constructor not found.');
-            }
-            resource = <T>Resource.add(new this._itemConstructor(name));
+    itemInstance(alias: string): T {
+        if (!this._itemConstructor) {
+            throw new Error('Item constructor not found.');
         }
-        return resource;
+        return new this._itemConstructor(alias);
     }
 
     get items$() {
@@ -107,11 +111,11 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
     }
 
     get items(): T[] {
-        return this.getEmbedded<IResource[]>('items', []).map(item => this.itemInstance(item._links.self.href).fromData(item));
+        return this._items;
     }
 
     get page(): number {
-        return this.options.page || 1;
+        return this.options.page;
     }
 
     set page(page: number) {
@@ -119,7 +123,7 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
     }
 
     get limit(): number {
-        return this.options.limit || 10;
+        return this.options.limit;
     }
 
     set limit(limit: number) {
@@ -164,36 +168,109 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
     }
 
     commit() {
-        const commit$ = new Subject<IPageableResource | null>();
-        Resource
+        const commit$ = new Subject<IPageableResource>();
+        Hal
             .http
             .get<IPageableResource>(this.resolveUrl())
             .toPromise()
             .then(data => {
                 this.clearChangeSet();
-                this.data = data;
+                Hal.attach(data._links.self.href, this._alias);
+                Hal.setItem(data._links.self.href, data);
                 commit$.next(data);
                 commit$.complete();
             });
         return commit$;    
     }
 
-    addItem(data: any, options?: any): Observable<IResource> {
+    navigateFirst() {
+        const commit$ = new Subject<IPageableResource>();
+        Hal
+            .http
+            .get<IPageableResource>(this.getLink('first'))
+            .toPromise()
+            .then(data => {
+                this.clearChangeSet();
+                Hal.attach(data._links.self.href, this._alias);
+                Hal.setItem(data._links.self.href, data);
+                commit$.next(data);
+                commit$.complete();
+            });
+        return commit$;  
+    }
+
+    navigatePrevious() {
+        const commit$ = new Subject<IPageableResource>();
+        Hal
+            .http
+            .get<IPageableResource>(this.getLink('previous'))
+            .toPromise()
+            .then(data => {
+                this.clearChangeSet();
+                Hal.attach(data._links.self.href, this._alias);
+                Hal.setItem(data._links.self.href, data);
+                commit$.next(data);
+                commit$.complete();
+            });
+        return commit$;
+    }
+
+    navigateNext() {
+        const commit$ = new Subject<IPageableResource>();
+        Hal
+            .http
+            .get<IPageableResource>(this.getLink('next'))
+            .toPromise()
+            .then(data => {
+                this.clearChangeSet();
+                Hal.attach(data._links.self.href, this._alias);
+                Hal.setItem(data._links.self.href, data);
+                commit$.next(data);
+                commit$.complete();
+            });
+        return commit$;
+    }
+
+    navigateLast() {
+        const commit$ = new Subject<IPageableResource>();
+        Hal
+            .http
+            .get<IPageableResource>(this.getLink('last'))
+            .toPromise()
+            .then(data => {
+                this.clearChangeSet();
+                Hal.attach(data._links.self.href, this._alias);
+                Hal.setItem(data._links.self.href, data);
+                commit$.next(data);
+                commit$.complete();
+            });
+        return commit$;
+    }
+
+    get isFirst() {
+        return this.getLink('self') === this.getLink('first');
+    }
+
+    get hasPrevious() {
+        return this.hasLink('previous'); 
+    }
+
+    get hasNext() {
+        return this.hasLink('next'); 
+    }
+
+    get isLast() {
+        return this.getLink('self') === this.getLink('last');
+    }
+
+    addItem(data: any, options?: any) {
         const addItem$ =  new Subject<IResource>();
-        Resource
+        Hal
             .http
             .post(this.baseUrl, data, options)
             .toPromise()
             .then(item => {
-                // if (item) {
-                //     const newData = Object.assign({}, this.data);
-                //     newData._embedded.items.unshift(item);
-                //     this.data = newData;
-                //     addItem$.next(item);
-                //     addItem$.complete();
-                    
-                // }
-                // addItem$.next(item);
+                addItem$.next(item);
                 addItem$.complete();
             });
         return addItem$;  
@@ -246,7 +323,7 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
         const queryString = this.flattenOptions(this.mergeOptionsChangeSet(this._changeSet))
             .map(option => `${option.key}${option.multiple ? '[]' : ''}=${option.value}`)
             .join('&');
-        return `${this.baseUrl}?${queryString}`;
+        return `${Hal.resloveBaseUrl(this.baseUrl)}?${queryString}`;
     }
 
     private resloveOptions(url: string): IOptions {
