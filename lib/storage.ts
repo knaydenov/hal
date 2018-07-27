@@ -1,8 +1,15 @@
 import {  Subject, Observable } from "rxjs";
 import { IResource } from "./resource";
 import 'rxjs/add/operator/filter';
+import { timer } from 'rxjs';
 import { filter, map } from 'rxjs/operators'
 import { Hal } from "./hal";
+
+export interface IHalStorageConfig {
+    storage: Storage;
+    prefix: string;
+    dumpInterval: number;
+}
 
 export interface IHalStorageAliases {
     [key: string]: string
@@ -37,10 +44,12 @@ export class HalStorage {
     private _aliases: IHalStorageAliases;
     private _origins: IHalStorageOrigins;
     private _prefix: string;
+    private _dumpTimer: Observable<number>;
 
-    constructor(storage: Storage, prefix: string) {
-        this._storage = storage;
-        this._prefix = prefix;
+    constructor(config: IHalStorageConfig) {
+        this._storage = config.storage;
+        this._prefix = config.prefix;
+        this._dumpTimer = timer(config.dumpInterval);
 
         const aliases = this._storage.getItem(`${this._prefix}aliases`);
         this._aliases = aliases ? JSON.parse(aliases) : {};
@@ -48,10 +57,13 @@ export class HalStorage {
         const origins = this._storage.getItem(`${this._prefix}origins`);
         this._origins = origins ? JSON.parse(origins) : {};
 
+        this._dumpTimer.subscribe(time => {
+            this._storage.setItem(`${this._prefix}origins`, JSON.stringify(this._origins));
+            this._storage.setItem(`${this._prefix}aliases`, JSON.stringify(this._aliases));
+        });
+
         this._data$.subscribe(event => {
             this._origins[event.key] = event.data;
-            this._storage.setItem(`${this._prefix}origins`, JSON.stringify(this._origins));
-
             this.getAliases(event.key).forEach(alias => {
                 this._aliasData$.next(new HalStorageEvent(alias, event.data));
             });
@@ -97,7 +109,6 @@ export class HalStorage {
         if (origin in this._origins) {
             delete this._origins[origin];
         }
-        this._storage.setItem(`${this._prefix}origins`, JSON.stringify(this._origins));
     }
 
     setItem(origin: string, data: IResource): void {
@@ -117,12 +128,10 @@ export class HalStorage {
 
     attach(origin: string, alias: string) {
         this._aliases[alias] = origin;
-        this._storage.setItem(`${this._prefix}aliases`, JSON.stringify(this._aliases));
     }
 
     detach(alias: string) {
         delete this._aliases[alias];
-        this._storage.setItem(`${this._prefix}aliases`, JSON.stringify(this._aliases));
     }
 
     getAliases(origin: string): string[] {
