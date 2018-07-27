@@ -275,14 +275,21 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
 
     addItem(data: any, options?: any) {
         const addItem$ =  new Subject<IResource>();
-        Hal
-            .http
-            .post(this.baseUrl, data, options)
+        this
+            .data$
+            .first()
             .toPromise()
-            .then(item => {
-                addItem$.next(item);
-                addItem$.complete();
-            });
+            .then(_=> {
+                Hal
+                    .http
+                    .post(this.baseUrl, data, options)
+                    .toPromise()
+                    .then(item => {
+                        addItem$.next(item);
+                        addItem$.complete();
+                    });
+            })
+     
         return addItem$;  
     }
 
