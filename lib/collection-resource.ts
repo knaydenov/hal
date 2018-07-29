@@ -13,6 +13,6 @@ export interface ICollectionResource extends IResource {
 
 export class CollectionResource<T> extends Resource<ICollectionResource> {
     get items(): T[] {
-        return this.getEmbedded('items', []);
+        return <T[]>this.getEmbedded<T[]>('items', []);
     }
 }
