@@ -125,4 +125,8 @@ export class Hal {
     static aliasData$(alias: string): Observable<IResource> {
         return Hal._storage.aliasData$(alias);
     }
+
+    static clear() {
+        Hal._storage.clear();
+    }
 }

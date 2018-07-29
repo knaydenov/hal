@@ -51,15 +51,15 @@ export class HalStorage {
         this._prefix = config.prefix;
         this._dumpTimer = timer(config.dumpInterval);
 
-        const aliases = this._storage.getItem(`${this._prefix}aliases`);
+        const aliases = this._storage.getItem(this.aliasesKey);
         this._aliases = aliases ? JSON.parse(aliases) : {};
 
-        const origins = this._storage.getItem(`${this._prefix}origins`);
+        const origins = this._storage.getItem(this.originsKey);
         this._origins = origins ? JSON.parse(origins) : {};
 
         this._dumpTimer.subscribe(time => {
-            this._storage.setItem(`${this._prefix}origins`, JSON.stringify(this._origins));
-            this._storage.setItem(`${this._prefix}aliases`, JSON.stringify(this._aliases));
+            this._storage.setItem(this.originsKey, JSON.stringify(this._origins));
+            this._storage.setItem(this.aliasesKey, JSON.stringify(this._aliases));
         });
 
         this._data$.subscribe(event => {
@@ -68,6 +68,14 @@ export class HalStorage {
                 this._aliasData$.next(new HalStorageEvent(alias, event.data));
             });
         });
+    }
+
+    get originsKey() {
+        return `${this._prefix}origins`;
+    }
+
+    get aliasesKey() {
+        return `${this._prefix}aliases`;
     }
 
     aliasData$(alias: string): Observable<IResource> {
@@ -84,14 +92,15 @@ export class HalStorage {
     }
 
     clear() {
-        this._storage.clear();
+        this._storage.removeItem(this.originsKey);
+        this._storage.removeItem(this.aliasesKey);
     }
 
     getItem(origin: string): IResource | null {
         if (origin in this._origins) {
             return this._origins[origin];
         } else {
-            const originsData = this._storage.getItem(`${this._prefix}origins`);
+            const originsData = this._storage.getItem(this.originsKey);
             if (originsData) {
                 const origins = JSON.parse(originsData);
                 if (origin in origins) {
