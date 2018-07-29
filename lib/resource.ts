@@ -226,11 +226,11 @@ export class Resource<I extends IResource> {
         throw new Error(`Data not found.`);
     }
 
-    getEmbedded<R>(rel: string, defaultValue: any): R {
+    getEmbedded<R>(rel: string, defaultValue?: R): R | undefined {
         if (this.data) {
             return Hal.getEmbedded(this.data, rel, defaultValue);
         }
-        throw new Error(`Data not found.`);
+        return defaultValue;
     }
 
 }
