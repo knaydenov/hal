@@ -203,8 +203,8 @@ export class Resource<I extends IResource> {
         return Hal.resloveBaseUrl(this.getLink('self'));
     }
 
-    get<R>(prop: string): R {
-        return this.data ? this.data[prop] : null;
+    get<R>(prop: string, defaultValue?: R): R | undefined {
+        return this.data ? this.data[prop] : defaultValue;
     }
 
     set(prop: string, value: any) {
