@@ -92,6 +92,8 @@ export class HalStorage {
     }
 
     clear() {
+        this._aliases = {};
+        this._origins = {};
         this._storage.removeItem(this.originsKey);
         this._storage.removeItem(this.aliasesKey);
     }
