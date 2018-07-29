@@ -1,7 +1,6 @@
-import {  Subject, Observable } from "rxjs";
+import {  Subject, Observable, interval } from "rxjs";
 import { IResource } from "./resource";
 import 'rxjs/add/operator/filter';
-import { timer } from 'rxjs';
 import { filter, map } from 'rxjs/operators'
 import { Hal } from "./hal";
 
@@ -49,7 +48,7 @@ export class HalStorage {
     constructor(config: IHalStorageConfig) {
         this._storage = config.storage;
         this._prefix = config.prefix;
-        this._dumpTimer = timer(config.dumpInterval);
+        this._dumpTimer = interval(config.dumpInterval);
 
         const aliases = this._storage.getItem(this.aliasesKey);
         this._aliases = aliases ? JSON.parse(aliases) : {};
