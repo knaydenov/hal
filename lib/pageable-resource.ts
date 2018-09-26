@@ -89,12 +89,14 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
     setItemConstructor(itemConstructor: new (alias: string) => T) {
         this._itemConstructor = itemConstructor;
         this.data$.subscribe(data => {
-            this._items = data._embedded.items.map(item => this.itemInstance(item._links.self.href));
-            this.items$.next(this.items);
-            data._embedded.items.forEach(item => {
-                Hal.attach(item._links.self.href, item._links.self.href);
-                Hal.setItem(item._links.self.href, item);
-            });
+            if (data) {
+                this._items = data._embedded.items.map(item => this.itemInstance(item._links.self.href));
+                this.items$.next(this.items);
+                data._embedded.items.forEach(item => {
+                    Hal.attach(item._links.self.href, item._links.self.href);
+                    Hal.setItem(item._links.self.href, item);
+                });
+            }
         });
         return this;
     }
