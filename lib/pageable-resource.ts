@@ -89,6 +89,7 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
     setItemConstructor(itemConstructor: new (alias: string) => T) {
         this._itemConstructor = itemConstructor;
         this.data$.subscribe(data => {
+            // Checking if data exists. It may be removed by refresh() method.
             if (data) {
                 this._items = data._embedded.items.map(item => this.itemInstance(item._links.self.href));
                 this.items$.next(this.items);
