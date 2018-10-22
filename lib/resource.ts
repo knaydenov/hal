@@ -57,6 +57,7 @@ export class Resource<I extends IResource> {
         if (data) {
             Hal.setItem(url, data);
         } else {
+            resource.isLoading = true;
             Hal.follow(url, options, name);
         }
 
@@ -82,6 +83,7 @@ export class Resource<I extends IResource> {
             .then(data => {
                 const url = Hal.getLink(data, rel);
                 if (url) {
+                    resource.isLoading = true;
                     Hal.follow(url, options, resoureceName);
                 }
             });
