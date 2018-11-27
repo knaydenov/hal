@@ -1,5 +1,5 @@
 import { IHttpService } from './http-service';
-import { HalStorage, IHalStorageOrigins } from './storage';
+import { HalStorage, IHalStorageOrigins, IHalStorageAliases } from './storage';
 import { IResource } from './resource';
 import { Observable } from 'rxjs';
 
@@ -24,7 +24,8 @@ export class Hal {
     }
 
     static follow(url: string, options?: any, alias?: string) {
-        Hal
+        const follow = new Promise<any>((resolve, reject) => {
+            Hal
             ._http
             .get(url, options)
             .toPromise()
@@ -36,7 +37,11 @@ export class Hal {
                 Hal._storage.attach(data._links.self.href, data._links.self.href);
 
                 Hal._storage.setItem(data._links.self.href, data);
+
+                resolve(data);
             });
+        });
+        return follow;
     }
 
     static resolveEmbeddedName(name: string, rel: string) {
@@ -55,7 +60,7 @@ export class Hal {
         throw new Error(`Link '${rel}' not found.`);
     }
 
-    static getEmbedded(resource: IResource, rel: string, defaultValue: any) {
+    static getEmbedded(resource: IResource, rel: string, defaultValue?: any) {
         if (!resource._embedded) {
             return defaultValue;
         }
@@ -93,6 +98,10 @@ export class Hal {
         return Hal._http;
     }
 
+    static get storage() {
+        return Hal._storage;
+    }
+
     // Storage proxy methods
 
     static getOrigin(alias: string) {
@@ -120,6 +129,10 @@ export class Hal {
 
     static get origins(): IHalStorageOrigins {
         return Hal._storage.origins;
+    }
+
+    static get aliases(): IHalStorageAliases {
+        return Hal._storage.aliases;
     }
 
     static aliasData$(alias: string): Observable<IResource> {

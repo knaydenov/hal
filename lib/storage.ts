@@ -1,4 +1,4 @@
-import {  Subject, Observable, interval } from "rxjs";
+import {  Subject, Observable, interval, Subscription } from "rxjs";
 import { IResource } from "./resource";
 import 'rxjs/add/operator/filter';
 import { filter, map } from 'rxjs/operators'
@@ -43,12 +43,13 @@ export class HalStorage {
     private _aliases: IHalStorageAliases;
     private _origins: IHalStorageOrigins;
     private _prefix: string;
-    private _dumpTimer: Observable<number>;
+    private _dumpTimer$: Observable<number>;
+    private _dumpTimer: Subscription|null = null;
 
     constructor(config: IHalStorageConfig) {
         this._storage = config.storage;
         this._prefix = config.prefix;
-        this._dumpTimer = interval(config.dumpInterval);
+        this._dumpTimer$ = interval(config.dumpInterval);
 
         const aliases = this._storage.getItem(this.aliasesKey);
         this._aliases = aliases ? JSON.parse(aliases) : {};
@@ -56,10 +57,7 @@ export class HalStorage {
         const origins = this._storage.getItem(this.originsKey);
         this._origins = origins ? JSON.parse(origins) : {};
 
-        this._dumpTimer.subscribe(time => {
-            this._storage.setItem(this.originsKey, JSON.stringify(this._origins));
-            this._storage.setItem(this.aliasesKey, JSON.stringify(this._aliases));
-        });
+        this.initDumpTimer();
 
         this._data$.subscribe(event => {
             this._origins[event.key] = event.data;
@@ -69,12 +67,33 @@ export class HalStorage {
         });
     }
 
+    get dumpTimer$() {
+        return this._dumpTimer$;
+    }
+
+    initDumpTimer() {
+        this._dumpTimer = this._dumpTimer$.subscribe(time => {
+            this._storage.setItem(this.originsKey, JSON.stringify(this._origins));
+            this._storage.setItem(this.aliasesKey, JSON.stringify(this._aliases));
+        });
+    }
+
+    removeDumpTimer() {
+        if (this._dumpTimer) {
+            this._dumpTimer.unsubscribe();
+        }
+    }
+
     get originsKey() {
         return `${this._prefix}origins`;
     }
 
     get aliasesKey() {
         return `${this._prefix}aliases`;
+    }
+
+    get data$() {
+        return this._data$;
     }
 
     aliasData$(alias: string): Observable<IResource> {
@@ -95,6 +114,7 @@ export class HalStorage {
         this._origins = {};
         this._storage.removeItem(this.originsKey);
         this._storage.removeItem(this.aliasesKey);
+        this.removeDumpTimer();
     }
 
     getItem(origin: string): IResource | null {
@@ -122,11 +142,13 @@ export class HalStorage {
     }
 
     setItem(origin: string, data: IResource): void {
+        this.attach(origin, data._links.self.href);
         this._data$.next(new HalStorageEvent(origin, data));
 
         HalStorage
             .resolveEmbeddedResources(data)
             .forEach(embedded => {
+                this.attach(embedded.data._links.self.href, embedded.data._links.self.href);
                 this.attach(embedded.data._links.self.href, Hal.resolveEmbeddedName(origin, embedded.key));
                 this.getAliases(origin).forEach(alias => {
                     this.attach(embedded.data._links.self.href, Hal.resolveEmbeddedName(alias, embedded.key));
@@ -173,5 +195,9 @@ export class HalStorage {
 
     get origins(): IHalStorageOrigins {
         return this._origins;
+    }
+
+    get storage(): Storage {
+        return this._storage;
     }
 }

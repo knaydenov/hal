@@ -11,7 +11,7 @@ export interface ICollectionResource extends IResource {
     };
 }
 
-export class CollectionResource<T> extends Resource<ICollectionResource> {
+export class CollectionResource<T> extends Resource<any> {
     get items(): T[] {
         return <T[]>this.getEmbedded<T[]>('items', []);
     }
