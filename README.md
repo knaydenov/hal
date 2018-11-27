@@ -1,4 +1,4 @@
-# @knaydenov/bem
+# @knaydenov/hal
 
 [![Build Status](https://travis-ci.org/knaydenov/hal.svg?branch=master)](https://travis-ci.org/knaydenov/hal)
 
