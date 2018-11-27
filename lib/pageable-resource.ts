@@ -62,7 +62,7 @@ export interface IPageableResource extends ICollectionResource {
     };
 }
 
-export class PageableResource<T extends Resource<IResource>> extends Resource<IPageableResource> { 
+export class PageableResource<T extends Resource<any>> extends Resource<IPageableResource> { 
     protected _changeSet: IOptionsChangeSet = {};
     protected _items: T[] = [];
 
@@ -81,7 +81,7 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
         super(alias);
         this.data$.subscribe(data => {
             if (data) {
-                this.options = this.resloveOptions(data._links.self.href);
+                this.options = this.resolveOptions(data._links.self.href);
             }
         });
     }
@@ -89,12 +89,15 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
     setItemConstructor(itemConstructor: new (alias: string) => T) {
         this._itemConstructor = itemConstructor;
         this.data$.subscribe(data => {
-            this._items = data._embedded.items.map(item => this.itemInstance(item._links.self.href));
-            this.items$.next(this.items);
-            data._embedded.items.forEach(item => {
-                Hal.attach(item._links.self.href, item._links.self.href);
-                Hal.setItem(item._links.self.href, item);
-            });
+            // Checking if data exists. It may be removed by refresh() method.
+            if (data) {
+                this._items = data._embedded.items.map(item => this.itemInstance(item._links.self.href));
+                this.items$.next(this.items);
+                data._embedded.items.forEach(item => {
+                    Hal.attach(item._links.self.href, item._links.self.href);
+                    Hal.setItem(item._links.self.href, item);
+                });
+            }
         });
         return this;
     }
@@ -293,7 +296,7 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
         return addItem$;  
     }
 
-    private flattenOptions(options: IOptions) {
+    flattenOptions(options: IOptions) {
         const flatOptions: IOption[] = [];
 
         flatOptions.push({
@@ -332,18 +335,18 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
         return queryString.parseUrl(url, {arrayFormat: 'index'});
     }
 
-    private mergeOptionsChangeSet(options: IOptionsChangeSet): IOptions {
+    mergeOptionsChangeSet(options: IOptionsChangeSet): IOptions {
         return Object.assign({}, this.options, options);
     }
 
-    private resolveUrl(): string {
+    resolveUrl(): string {
         const queryString = this.flattenOptions(this.mergeOptionsChangeSet(this._changeSet))
             .map(option => `${option.key}${option.multiple ? '[]' : ''}=${option.value}`)
             .join('&');
         return `${Hal.resloveBaseUrl(this.baseUrl)}?${queryString}`;
     }
 
-    private resloveOptions(url: string): IOptions {
+    resolveOptions(url: string): IOptions {
         const options: IOptions = {
             page: 1,
             limit: 10,
@@ -361,10 +364,16 @@ export class PageableResource<T extends Resource<IResource>> extends Resource<IP
         }
 
         if (query.sort) {
-            options.sort = query.sort.split(',').map(part => {
-                let [, direction, field] = part.match(/(-)?(\w+)/);
-                return {field: field, direction: direction !== '-' };
-            });
+            options.sort = query
+                .sort
+                .split(',')
+                .map(part => {
+                    let [, direction, field] = /(-)?(\w+)/.exec(part) || ['', '', ''];
+                    return {field: field, direction: direction !== '-' };
+                })
+                .filter(sort => {
+                    return sort.field.length;
+                })
         }
 
         const filters: IFilter[] = [];

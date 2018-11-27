@@ -50,27 +50,28 @@ export class Resource<I extends IResource> {
 
     }
    
-    static fromUrl<T extends Resource<IResource>>(url: string, options?: any, name?: string): T {
+    static fromUrl<T extends Resource<any>>(url: string, options?: any, name?: string): T {
         const resource = new this(url);
         const data = Hal.getItem(url);
 
         if (data) {
             Hal.setItem(url, data);
         } else {
+            resource.isLoading = true;
             Hal.follow(url, options, name);
         }
 
         return <T>resource;
     }
 
-    static fromEmbedded<T extends Resource<IResource>>(parentResource: Resource<IResource>, rel: string, name?: string): T {
+    static fromEmbedded<T extends Resource<any>>(parentResource: Resource<any>, rel: string, name?: string): T {
         const resoureceName = parentResource.resolveEmbeddedName(name ? name : rel);
         const resource = new this(resoureceName);
 
         return <T>resource;
     }
 
-    static fromLink<T extends Resource<IResource>>(parentResource: Resource<IResource>, rel: string, options?: any, name?: string): T {
+    static fromLink<T extends Resource<any>>(parentResource: Resource<any>, rel: string, options?: any, name?: string): T {
         const resoureceName = parentResource.resolveLinkName(name ? name : rel);
         const resource = new this(resoureceName);
 
@@ -82,6 +83,7 @@ export class Resource<I extends IResource> {
             .then(data => {
                 const url = Hal.getLink(data, rel);
                 if (url) {
+                    resource.isLoading = true;
                     Hal.follow(url, options, resoureceName);
                 }
             });
@@ -89,7 +91,7 @@ export class Resource<I extends IResource> {
         return <T>resource;
     }
 
-    static fromData<T extends Resource<IResource>>(data: IResource): T {
+    static fromData<T extends Resource<any>>(data: IResource): T {
         const resource = new this(data._links.self.href);
         Hal.attach(data._links.self.href, data._links.self.href);
         Hal.setItem(data._links.self.href, data);
@@ -173,6 +175,10 @@ export class Resource<I extends IResource> {
 
     clearChangeSet() {
         this._changeSet = {};
+    }
+
+    get alias() {
+        return this._alias;
     }
 
     get data$() {
