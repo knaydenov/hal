@@ -193,6 +193,10 @@ export class Resource<I extends IResource> {
         return !!this._data;
     }
 
+    get isLoading$() {
+        return this._isLoading$;
+    }
+
     set isLoading(isLoading: boolean) {
         this._isLoading$.next(isLoading);
     }
