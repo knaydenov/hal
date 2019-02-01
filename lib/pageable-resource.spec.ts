@@ -92,6 +92,27 @@ describe('PageableResource', () => {
             expect(user instanceof User).to.be.true;
         });
 
+        it('should return same instance when called multiple times', (done) => {
+            Hal.init(
+                {
+                    http: new FakeHttp,
+                    storage: new FakeStorage
+                }
+            );
+            const users: PageableResource<User> = PageableResource
+                .fromUrl<PageableResource<User>>('/users')
+                .setItemConstructor(User);
+                
+            const user1 = users.itemInstance('/users/1');
+            const user2 = users.itemInstance('/users/1');
+
+            expect(user1).to.be.eq(user2);
+            done();
+
+            Hal.clear();
+
+        });
+
         it('should throw an exception if item constructor is not set', () => {
            
             const users: PageableResource<User> = new PageableResource('/users');
@@ -100,6 +121,7 @@ describe('PageableResource', () => {
             }).to.throw(Error, "Item constructor not found.");
             
         });
+
     });
 
     describe('#set options', () => {
