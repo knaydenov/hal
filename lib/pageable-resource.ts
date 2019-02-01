@@ -175,7 +175,6 @@ export class PageableResource<T extends Resource<any>> extends Resource<IPageabl
     }
 
     commit() {
-        this.clearCache();
         const commit$ = new Subject<IPageableResource>();
 
         this.isLoading = true;
