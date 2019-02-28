@@ -139,6 +139,13 @@ export class Hal {
         return Hal._storage.aliasData$(alias);
     }
 
+    static removeSiblings(url: string) {
+        Object
+            .keys(Hal.origins)
+            .filter(origin => Hal.resloveBaseUrl(origin) === url)
+            .forEach(origin => Hal.removeItem(origin) );
+    }
+
     static clear() {
         Hal._storage.clear();
     }

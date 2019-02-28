@@ -128,11 +128,7 @@ export class Resource<I extends IResource> {
         const refresh$ = new Subject<I>();
         const url = this.getLink('self');
         
-        // Removing siblind origins
-        Object
-            .keys(Hal.origins)
-            .filter(origin => Hal.resloveBaseUrl(origin) === this.baseUrl)
-            .forEach(origin => Hal.removeItem(origin) );
+        Hal.removeSiblings(this.baseUrl);
 
         this.isLoading = true;
         Hal
