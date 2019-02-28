@@ -170,5 +170,30 @@ describe('Hal', () => {
         });
     });
 
+    describe('.removeSiblings', () => {
+        it('should remove correct origins', () => {
+            Hal.setItem('/data?page=1&limit=10', { _links: { self: { href: '/data?page=1&limit=10' }} });
+            Hal.setItem('/data?page=2&limit=10', { _links: { self: { href: '/data?page=2&limit=10' }} });
+            Hal.setItem('/data?page=3&limit=10', { _links: { self: { href: '/data?page=3&limit=10' }} });
+            Hal.setItem('/data?page=4&limit=10', { _links: { self: { href: '/data?page=4&limit=10' }} });
+            Hal.setItem('/data?page=5&limit=10', { _links: { self: { href: '/data?page=5&limit=10' }} });
+
+            Hal.setItem('/user', { _links: { self: { href: '/user' }} });
+
+            Hal.setItem('/other?page=1&limit=10', { _links: { self: { href: '/other?page=1&limit=10' }} });
+            Hal.setItem('/other?page=2&limit=10', { _links: { self: { href: '/other?page=2&limit=10' }} });
+            Hal.setItem('/other?page=3&limit=10', { _links: { self: { href: '/other?page=3&limit=10' }} });
+            Hal.setItem('/other?page=4&limit=10', { _links: { self: { href: '/other?page=4&limit=10' }} });
+            Hal.setItem('/other?page=5&limit=10', { _links: { self: { href: '/other?page=5&limit=10' }} });
+
+            Hal.removeSiblings('/data');
+
+            expect(Object.keys(Hal.origins).length).to.be.eq(6);
+            expect(Hal.getItem('/other?page=1&limit=10')).to.be.eqls({ _links: { self: { href: '/other?page=1&limit=10' }} });
+            expect(Hal.getItem('/user')).to.be.eqls({ _links: { self: { href: '/user' }} });
+            expect(Hal.getItem('/data?page=1&limit=10')).to.be.null;
+        });
+    });
+
 });
 
