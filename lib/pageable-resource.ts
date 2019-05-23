@@ -65,7 +65,6 @@ export interface IPageableResource extends ICollectionResource {
 export class PageableResource<T extends Resource<any>> extends Resource<IPageableResource> { 
     protected _changeSet: IOptionsChangeSet = {};
     protected _items: T[] = [];
-    protected _itemsCache: {[key: string]: T} = {};
 
     private _options: IOptions = {
         page: 1,
@@ -107,10 +106,12 @@ export class PageableResource<T extends Resource<any>> extends Resource<IPageabl
         if (!this._itemConstructor) {
             throw new Error('Item constructor not found.');
         }
-        if (!this._itemsCache[alias]) {
-            this._itemsCache[alias] = new this._itemConstructor(alias);
-        }
-        return this._itemsCache[alias];
+
+        const cachedResource = Hal.getCache(alias);
+        const resource = cachedResource ? cachedResource : new this._itemConstructor(alias);
+        Hal.setCache(alias, resource);
+
+        return <T>resource;
     }
 
     get items$() {
@@ -190,11 +191,6 @@ export class PageableResource<T extends Resource<any>> extends Resource<IPageabl
                 commit$.complete();
             });
         return commit$;    
-    }
-
-    refresh() {
-        this.clearCache();
-        return super.refresh();
     }
 
     navigateFirst() {
@@ -413,9 +409,5 @@ export class PageableResource<T extends Resource<any>> extends Resource<IPageabl
             });
         options.filters = filters;
         return options;
-    }
-
-    clearCache() {
-        this._itemsCache = {};
     }
 }

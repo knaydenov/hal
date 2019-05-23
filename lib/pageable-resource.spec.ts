@@ -96,20 +96,51 @@ describe('PageableResource', () => {
             Hal.init(
                 {
                     http: new FakeHttp,
-                    storage: new FakeStorage
+                    storage: new FakeStorage,
+                    enableCache: true
                 }
             );
+            Hal.clearCache();
+
             const users: PageableResource<User> = PageableResource
                 .fromUrl<PageableResource<User>>('/users')
                 .setItemConstructor(User);
                 
-            const user1 = users.itemInstance('/users/1');
-            const user2 = users.itemInstance('/users/1');
+            const user = users.itemInstance('/users/1');
+            const sameUser = users.itemInstance('/users/1');
 
-            expect(user1).to.be.eq(user2);
+            expect(user).to.be.equal(sameUser);
+
             done();
 
             Hal.clear();
+            Hal.clearCache();
+
+        });
+
+        it('should return not same instance when called multiple times with different url', (done) => {
+            Hal.init(
+                {
+                    http: new FakeHttp,
+                    storage: new FakeStorage,
+                    enableCache: true
+                }
+            );
+            Hal.clearCache();
+
+            const users: PageableResource<User> = PageableResource
+                .fromUrl<PageableResource<User>>('/users')
+                .setItemConstructor(User);
+                
+            const user = users.itemInstance('/users/1');
+            const otherUser = users.itemInstance('/users/2');
+
+            expect(user).to.be.not.equal(otherUser);
+
+            done();
+
+            Hal.clear();
+            Hal.clearCache();
 
         });
 
