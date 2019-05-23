@@ -1,6 +1,6 @@
 import { IHttpService } from './http-service';
 import { HalStorage, IHalStorageOrigins, IHalStorageAliases } from './storage';
-import { IResource } from './resource';
+import { IResource, Resource } from './resource';
 import { Observable } from 'rxjs';
 
 export interface IConfig {
@@ -8,11 +8,14 @@ export interface IConfig {
     storage: Storage;
     prefix?: string;
     dumpInterval?: number;
+    enableCache?: boolean;
 }
 
 export class Hal {
     private static _storage: HalStorage;
     private static _http: IHttpService;
+    private static _itemsCache: {[key: string]: Resource<any>} = {};
+    private static _enableCache: boolean = false;
 
     static init(config: IConfig) {
         Hal._http = config.http;
@@ -21,6 +24,9 @@ export class Hal {
             prefix: config.prefix ? config.prefix : '',
             dumpInterval: config.dumpInterval ? config.dumpInterval : 5000, // 5 sec
         });
+        if (config.enableCache) {
+            Hal.enableCache();
+        }
     }
 
     static follow(url: string, options?: any, alias?: string) {
@@ -148,5 +154,38 @@ export class Hal {
 
     static clear() {
         Hal._storage.clear();
+    }
+
+    static hasCache(alias: string) {
+        return Hal._enableCache && alias in Hal._itemsCache;
+    }
+
+    static getCache(alias: string) {
+        if (Hal.hasCache(alias)) {
+            return Hal._itemsCache[alias];
+        }
+        return null;
+    }
+
+    static setCache(alias: string, item: Resource<any>) {
+        if (Hal._enableCache) {
+            Hal._itemsCache[alias] = item;
+        }
+    }
+
+    static removeCache(alias: string) {
+        if (Hal._enableCache && Hal.hasCache(alias)) {
+            delete Hal._itemsCache[alias];
+        }
+    }
+
+    static clearCache() {
+        if (Hal._enableCache) {
+            Hal._itemsCache = {};
+        }
+    }
+
+    static enableCache(enable: boolean = true) {
+        Hal._enableCache = enable;
     }
 }

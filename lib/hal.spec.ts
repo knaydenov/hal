@@ -6,6 +6,7 @@ import { FakeStorage } from './test/fake-storage';
 import { Hal } from './hal';
 
 import 'ts-sinon';
+import { IResource, Resource } from './resource';
 
 use(sinonChai);
 
@@ -195,5 +196,84 @@ describe('Hal', () => {
         });
     });
 
+    describe('.hasCache', () => {
+        it('should return valid values', () => {
+            Hal.enableCache();
+           
+            Hal.setCache('some-alias', <Resource<any>>{});
+            Hal.setCache('other-alias', <Resource<any>>{});
+
+            expect(Hal.hasCache('some-alias')).to.be.true;
+            expect(Hal.hasCache('other-alias')).to.be.true;
+            expect(Hal.hasCache('wrong-alias')).to.be.false;
+
+            Hal.clearCache();
+            Hal.enableCache(false);
+        });
+    });
+
+    describe('.getCache', () => {
+        it('should return valid values', () => {
+            Hal.enableCache();
+            
+            const res1 = <Resource<any>>{};
+            const res2 = <Resource<any>>{};
+
+            Hal.setCache('some-alias', res1);
+            Hal.setCache('other-alias', res2);
+
+            expect(Hal.getCache('some-alias')).to.be.equal(res1);
+            expect(Hal.getCache('other-alias')).to.be.equal(res2);
+
+            Hal.clearCache();
+            Hal.enableCache(false);
+        });
+
+        it('should return null if item is not cached', () => {
+            Hal.enableCache();
+            
+            const res1 = <Resource<any>>{};
+            const res2 = <Resource<any>>{};
+
+            Hal.setCache('some-alias', res1);
+            Hal.setCache('other-alias', res2);
+
+            expect(Hal.getCache('wrong-alias')).to.be.null;
+
+            Hal.clearCache();
+            Hal.enableCache(false);
+        });
+    });
+
+    describe('.removeCache', () => {
+        it('should remove items correctly', () => {
+            Hal.enableCache();
+            
+            const res1 = <Resource<any>>{};
+            const res2 = <Resource<any>>{};
+            const res3 = <Resource<any>>{};
+
+            Hal.setCache('some-alias', res1);
+            Hal.setCache('other-alias', res2);
+            Hal.setCache('another-alias', res3);
+
+            
+            
+            expect(Hal.hasCache('another-alias')).to.be.true;
+            Hal.removeCache('another-alias');
+            expect(Hal.hasCache('another-alias')).to.be.false;
+
+            expect(Hal.hasCache('other-alias')).to.be.true;
+            Hal.removeCache('other-alias');
+            expect(Hal.hasCache('other-alias')).to.be.false;
+
+            expect(Hal.hasCache('some-alias')).to.be.true;
+            Hal.removeCache('some-alias');
+            expect(Hal.hasCache('some-alias')).to.be.false;
+
+            Hal.clearCache();
+            Hal.enableCache(false);
+        });
+    });
 });
 

@@ -51,7 +51,10 @@ export class Resource<I extends IResource> {
     }
    
     static fromUrl<T extends Resource<any>>(url: string, options?: any, name?: string): T {
-        const resource = new this(url);
+        const cachedResource = Hal.getCache(url);
+        const resource = cachedResource ? cachedResource : new this(url);
+        Hal.setCache(url, resource);
+
         const data = Hal.getItem(url);
 
         if (data) {
@@ -66,14 +69,18 @@ export class Resource<I extends IResource> {
 
     static fromEmbedded<T extends Resource<any>>(parentResource: Resource<any>, rel: string, name?: string): T {
         const resoureceName = parentResource.resolveEmbeddedName(name ? name : rel);
-        const resource = new this(resoureceName);
+        const cachedResource = Hal.getCache(resoureceName);
+        const resource = cachedResource ? cachedResource : new this(resoureceName);
+        Hal.setCache(resoureceName, resource);
 
         return <T>resource;
     }
 
     static fromLink<T extends Resource<any>>(parentResource: Resource<any>, rel: string, options?: any, name?: string): T {
         const resoureceName = parentResource.resolveLinkName(name ? name : rel);
-        const resource = new this(resoureceName);
+        const cachedResource = Hal.getCache(resoureceName);
+        const resource = cachedResource ? cachedResource : new this(resoureceName);
+        Hal.setCache(resoureceName, resource);
 
         parentResource
             .data$
@@ -92,7 +99,10 @@ export class Resource<I extends IResource> {
     }
 
     static fromData<T extends Resource<any>>(data: IResource): T {
-        const resource = new this(data._links.self.href);
+        const cachedResource = Hal.getCache(data._links.self.href);
+        const resource = cachedResource ? cachedResource : new this(data._links.self.href);
+        Hal.setCache(data._links.self.href, resource);
+
         Hal.attach(data._links.self.href, data._links.self.href);
         Hal.setItem(data._links.self.href, data);
         return <T>resource;
