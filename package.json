@@ -1,6 +1,6 @@
 {
   "name": "@knaydenov/hal",
-  "version": "2.1.8",
+  "version": "2.2.0",
   "description": "Base classes for HAL API consuming model.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,27 +18,27 @@
   "author": "Klim Naydenov <knaydenov@gmail.com>",
   "license": "ISC",
   "peerDependencies": {
-    "rxjs": "^6.3.3",
-    "rxjs-compat": "^6.3.3"
+    "rxjs": "^6.5.2",
+    "rxjs-compat": "^6.5.2"
   },
   "dependencies": {
-    "query-string": "^6.1.0",
-    "@types/query-string": "^6.1.0",
-    "typescript": "^2.9.2"
+    "@types/query-string": "^6.3.0",
+    "query-string": "^6.6.0",
+    "typescript": "^3.5.1"
   },
   "devDependencies": {
-    "rxjs": "^6.3.3",
-    "rxjs-compat": "^6.3.3",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.0",
-    "@types/mocha": "^5.2.5",
-    "@types/sinon-chai": "^3.2.1",
+    "@types/mocha": "^5.2.7",
+    "@types/sinon-chai": "^3.2.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "events": "^3.0.0",
     "mocha": "^5.2.0",
+    "rxjs": "^6.5.2",
+    "rxjs-compat": "^6.5.2",
     "sinon-chai": "^3.3.0",
     "ts-node": "^7.0.1",
-    "ts-sinon": "^1.0.12"
+    "ts-sinon": "^1.0.17"
   }
 }
