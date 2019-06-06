@@ -336,7 +336,7 @@ export class PageableResource<T extends Resource<any>> extends Resource<IPageabl
         return flatOptions;
     }
 
-    private static parseUrl(url: string): { url: string; query: {[key: string]: string}} {
+    private static parseUrl(url: string): queryString.ParsedUrl {
         return queryString.parseUrl(url, {arrayFormat: 'index'});
     }
 
@@ -360,15 +360,15 @@ export class PageableResource<T extends Resource<any>> extends Resource<IPageabl
         };
         const query = PageableResource.parseUrl(url).query;
 
-        if (query.page) {
+        if (typeof query.page === 'string') {
             options.page = parseInt(query.page, 10);
         }
 
-        if (query.limit) {
+        if (typeof query.limit === 'string') {
             options.limit = parseInt(query.limit, 10);
         }
 
-        if (query.sort) {
+        if (typeof query.sort === 'string') {
             options.sort = query
                 .sort
                 .split(',')
@@ -398,7 +398,7 @@ export class PageableResource<T extends Resource<any>> extends Resource<IPageabl
                             value: value
                         });
                     })
-                } else {
+                } else if (typeof filter.value === 'string') {
                     filters.push({
                         field: filter.field,
                         multiple: false,
