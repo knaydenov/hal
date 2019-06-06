@@ -24,7 +24,7 @@
   "dependencies": {
     "@types/query-string": "^6.3.0",
     "query-string": "^6.6.0",
-    "typescript": "^3.5.1"
+    "typescript": "^3.4.2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
