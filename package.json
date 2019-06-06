@@ -1,6 +1,6 @@
 {
   "name": "@knaydenov/hal",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Base classes for HAL API consuming model.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -24,7 +24,7 @@
   "dependencies": {
     "@types/query-string": "^6.3.0",
     "query-string": "^6.6.0",
-    "typescript": "^3.5.1"
+    "typescript": "^3.4.2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
