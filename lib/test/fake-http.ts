@@ -1,7 +1,8 @@
+
+import {of as observableOf,  Observable } from 'rxjs';
 import { IResource, Resource } from '../resource';
 import { IHttpService } from '../http-service';
-import { Observable } from 'rxjs';
-import 'rxjs/add/observable/of';
+
 import { IPageableResource } from '../pageable-resource';
 
 export interface IUser extends IResource {
@@ -129,18 +130,18 @@ export class FakeHttp  implements IHttpService {
     };
 
     get<I extends IResource>(url: string, options?: any): Observable<I> {
-        return Observable.of(this._data[url]);
+        return observableOf(this._data[url]);
     }
 
     post<I extends IResource>(url: string, data: any, options?: any):Observable<I> {
-        return Observable.of(this._data[url]);
+        return observableOf(this._data[url]);
     }
 
     patch<I extends IResource>(url: string, data: any, options?: any): Observable<I> {
-        return Observable.of(this._data[url]);
+        return observableOf(this._data[url]);
     }
 
     delete(url: string, options?: any): Observable<null> {
-        return Observable.of(null);
+        return observableOf(null);
     }
 }

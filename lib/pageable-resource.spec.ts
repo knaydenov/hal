@@ -1,10 +1,11 @@
+
+import {first,  skip } from 'rxjs/operators';
 import { expect } from 'chai';
 import sinon from 'ts-sinon';
 import { PageableResource } from './pageable-resource';
 import { Hal } from './hal';
 import { FakeHttp, User } from './test/fake-http';
 import { FakeStorage } from './test/fake-storage';
-import { skip } from 'rxjs/operators/skip';
 
 
 describe('PageableResource', () => {
@@ -21,7 +22,7 @@ describe('PageableResource', () => {
             .setItemConstructor(User);
             const spy = sinon.spy(users, 'resolveOptions');
 
-            await users.data$.first().toPromise();
+            await users.data$.pipe(first()).toPromise();
 
             Hal.clear();
 
@@ -42,7 +43,7 @@ describe('PageableResource', () => {
                 .fromUrl<PageableResource<User>>('/users')
                 .setItemConstructor(User);
 
-            await users.data$.first().toPromise();
+            await users.data$.pipe(first()).toPromise();
 
             Hal.clear();
             expect(users.items.length).to.be.equal(10);

@@ -1,6 +1,8 @@
+
+import {first} from 'rxjs/operators';
 import { Hal } from './hal';
 import { Subject, ReplaySubject, BehaviorSubject } from 'rxjs';
-import 'rxjs/add/operator/first';
+
 
 export interface ILink {
     href: string;
@@ -84,8 +86,8 @@ export class Resource<I extends IResource> {
 
         parentResource
             .data$
-            .asObservable()
-            .first()
+            .asObservable().pipe(
+            first())
             .toPromise()
             .then(data => {
                 const url = Hal.getLink(data, rel);
