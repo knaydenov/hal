@@ -1,7 +1,10 @@
+
+import {first} from 'rxjs/operators';
 import { expect } from 'chai';
 import sinon from 'ts-sinon';
 import { HalStorage } from './storage';
 import { FakeStorage } from './test/fake-storage';
+
 
 describe('Storage', () => {
     describe('.constructor', () => {
@@ -83,9 +86,9 @@ describe('Storage', () => {
             storage.attach('/me', '/other#res');
 
             const all = Promise.all([
-                storage.aliasData$('/me').first().toPromise(),
-                storage.aliasData$('/self').first().toPromise(),
-                storage.aliasData$('/other#res').first().toPromise(),
+                storage.aliasData$('/me').pipe(first()).toPromise(),
+                storage.aliasData$('/self').pipe(first()).toPromise(),
+                storage.aliasData$('/other#res').pipe(first()).toPromise(),
             ]);
 
             all.then(data => {
@@ -223,7 +226,7 @@ describe('Storage', () => {
 
             storage.removeDumpTimer();
 
-            storage.data$.first().toPromise().then(data => {
+            storage.data$.pipe(first()).toPromise().then(data => {
                 expect(data.key).to.be.equal('/me');
                 expect(data.data).to.be.equal(newMe);
                 done();

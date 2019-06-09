@@ -1,6 +1,6 @@
 import {  Subject, Observable, interval, Subscription } from "rxjs";
 import { IResource } from "./resource";
-import 'rxjs/add/operator/filter';
+
 import { filter, map } from 'rxjs/operators'
 import { Hal } from "./hal";
 

@@ -1,3 +1,5 @@
+
+import {first} from 'rxjs/operators';
 import { IResource, IChangeSet, Resource } from "./resource";
 import { ICollectionResource } from "./collection-resource";
 import { Subject, BehaviorSubject } from "rxjs";
@@ -284,8 +286,8 @@ export class PageableResource<T extends Resource<any>> extends Resource<IPageabl
     addItem(data: any, options?: any) {
         const addItem$ =  new Subject<IResource>();
         this
-            .data$
-            .first()
+            .data$.pipe(
+            first())
             .toPromise()
             .then(_=> {
                 Hal

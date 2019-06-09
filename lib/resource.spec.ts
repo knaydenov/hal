@@ -1,10 +1,11 @@
+
+import {first,  skip } from 'rxjs/operators';
 import { expect } from 'chai';
 import sinon from 'ts-sinon';
 import { Resource, IResource } from './resource';
 import { FakeHttp } from './test/fake-http';
 import { FakeStorage } from './test/fake-storage';
 import { Hal } from './hal';
-import { skip } from 'rxjs/operators';
 
 describe('Resource', () => {
     describe('#constructor', () => {
@@ -24,7 +25,7 @@ describe('Resource', () => {
             const res = new Resource('/resource');
             const newData: IResource = {_links: {self: {href: '/resource'}}};
 
-            res.data$.first().toPromise().then(data => {
+            res.data$.pipe(first()).toPromise().then(data => {
                 expect(data).to.be.eqls(newData);
                 done();
             });
@@ -56,7 +57,7 @@ describe('Resource', () => {
 
             const res = new Resource('/resource');
 
-            res.data$.first().toPromise().then(data => {
+            res.data$.pipe(first()).toPromise().then(data => {
                 expect(data).to.be.eqls({_links: {self: {href: '/resource'}}});
                 done();
             });
