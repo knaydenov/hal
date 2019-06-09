@@ -18,8 +18,7 @@
   "author": "Klim Naydenov <knaydenov@gmail.com>",
   "license": "ISC",
   "peerDependencies": {
-    "rxjs": "^6.5.2",
-    "rxjs-compat": "^6.5.2"
+    "rxjs": "^6.5.2"
   },
   "dependencies": {
     "@types/query-string": "^6.3.0",
@@ -36,7 +35,6 @@
     "events": "^3.0.0",
     "mocha": "^5.2.0",
     "rxjs": "^6.5.2",
-    "rxjs-compat": "^6.5.2",
     "sinon-chai": "^3.3.0",
     "ts-node": "^7.0.1",
     "ts-sinon": "^1.0.17"
