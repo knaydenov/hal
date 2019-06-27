@@ -14,21 +14,21 @@ export interface ICollectionResource extends IResource {
     };
 }
 
-export interface IFilter {
+export interface ICollectionResourceFilter {
     field: string;
     multiple: boolean;
     value: string;
 };
 
-export interface IOptions {
-    filters: IFilter[];
+export interface ICollectionResourceOptions {
+    filters: ICollectionResourceFilter[];
 }
 
 export interface IOptionsChangeSet extends IChangeSet {
-    filters?: IFilter[];
+    filters?: ICollectionResourceFilter[];
 }
 
-export interface IOption {
+export interface ICollectionResourceOption {
     key: string;
     multiple: boolean;
     value: string;
@@ -38,10 +38,10 @@ export class CollectionResource<T> extends Resource<any> {
     protected _changeSet: IOptionsChangeSet = {};
     protected _items: T[] = [];
 
-    private _options: IOptions = {
+    private _options: ICollectionResourceOptions = {
         filters: []
     };
-    private _options$: Subject<IOptions> = new Subject<IOptions>();
+    private _options$: Subject<ICollectionResourceOptions> = new Subject<ICollectionResourceOptions>();
     private _items$: BehaviorSubject<T[]> = new BehaviorSubject<T[]>([]);
     
     constructor(alias: string) {
@@ -55,11 +55,11 @@ export class CollectionResource<T> extends Resource<any> {
         });
     }
 
-    get filters(): IFilter[] {
+    get filters(): ICollectionResourceFilter[] {
         return this.options.filters;
     }
 
-    set filters(filters: IFilter[]) {
+    set filters(filters: ICollectionResourceFilter[]) {
         this.set('filters', filters);
     }
 
@@ -67,7 +67,7 @@ export class CollectionResource<T> extends Resource<any> {
         return this._options;
     }
 
-    set options(options: IOptions) {
+    set options(options: ICollectionResourceOptions) {
         this._options = options;
         this.options$.next(this._options);
     }
@@ -102,13 +102,13 @@ export class CollectionResource<T> extends Resource<any> {
         return this._items;
     }
 
-    resolveOptions(url: string): IOptions {
-        const options: IOptions = {
+    resolveOptions(url: string): ICollectionResourceOptions {
+        const options: ICollectionResourceOptions = {
             filters: []
         };
         const query = CollectionResource.parseUrl(url).query;
 
-        const filters: IFilter[] = [];
+        const filters: ICollectionResourceFilter[] = [];
 
         Object
             .keys(query)
@@ -138,8 +138,8 @@ export class CollectionResource<T> extends Resource<any> {
         return options;
     }
 
-    flattenOptions(options: IOptions) {
-        const flatOptions: IOption[] = [];
+    flattenOptions(options: ICollectionResourceOptions) {
+        const flatOptions: ICollectionResourceOption[] = [];
         
         options.filters.forEach(filter => flatOptions.push(
             {
@@ -156,7 +156,7 @@ export class CollectionResource<T> extends Resource<any> {
         return queryString.parseUrl(url, {arrayFormat: 'index'});
     }
 
-    mergeOptionsChangeSet(options: IOptionsChangeSet): IOptions {
+    mergeOptionsChangeSet(options: IOptionsChangeSet): ICollectionResourceOptions {
         return Object.assign({}, this.options, options);
     }
 
