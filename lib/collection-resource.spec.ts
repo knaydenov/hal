@@ -27,20 +27,6 @@ describe('CollectionResource', () => {
 
             Hal.clear();
         });
-
-        it('should return empty array by default', async () => {
-            Hal.init(
-                {
-                    http: new FakeHttp,
-                    storage: new FakeStorage
-                }
-            );
-            
-            let species: CollectionResource<string> = CollectionResource.fromUrl<CollectionResource<string>>('/me');
-            await species.data$.pipe(first()).toPromise();
-            expect(species.items).is.eqls([]);
-            Hal.clear();
-        });
     });
 });
 
