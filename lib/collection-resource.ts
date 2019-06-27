@@ -24,7 +24,7 @@ export interface ICollectionResourceOptions {
     filters: ICollectionResourceFilter[];
 }
 
-export interface IOptionsChangeSet extends IChangeSet {
+export interface ICollectionResourceOptionsChangeSet extends IChangeSet {
     filters?: ICollectionResourceFilter[];
 }
 
@@ -35,7 +35,7 @@ export interface ICollectionResourceOption {
 }
 
 export class CollectionResource<T> extends Resource<any> {
-    protected _changeSet: IOptionsChangeSet = {};
+    protected _changeSet: ICollectionResourceOptionsChangeSet = {};
     protected _items: T[] = [];
 
     private _options: ICollectionResourceOptions = {
@@ -156,7 +156,7 @@ export class CollectionResource<T> extends Resource<any> {
         return queryString.parseUrl(url, {arrayFormat: 'index'});
     }
 
-    mergeOptionsChangeSet(options: IOptionsChangeSet): ICollectionResourceOptions {
+    mergeOptionsChangeSet(options: ICollectionResourceOptionsChangeSet): ICollectionResourceOptions {
         return Object.assign({}, this.options, options);
     }
 
