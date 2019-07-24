@@ -1,31 +1,48 @@
 import { IHttpService } from './http-service';
 import { HalStorage, IHalStorageOrigins, IHalStorageAliases } from './storage';
 import { IResource, Resource } from './resource';
-import { Observable } from 'rxjs';
+import { Observable, Subject, Subscription, interval } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 export interface IConfig {
     http: IHttpService;
     storage: Storage;
     prefix?: string;
     dumpInterval?: number;
+    autoDump?: boolean;
+    autoDumpDebounceTime?: number;
     enableCache?: boolean;
 }
 
 export class Hal {
+    private static readonly DEFAULT_AUTO_DUMP_DEBOUNCE_TIME = 1000;
     private static _storage: HalStorage;
     private static _http: IHttpService;
     private static _itemsCache: {[key: string]: Resource<any>} = {};
     private static _enableCache: boolean = false;
-
+    private static _autoDump: boolean = true;
+    private static _dump$: Subject<null> = new Subject<null>();
+    private static _dumpTimer$: Observable<number>|null = null;
+    private static _dumpTimer: Subscription|null = null;
+    
     static init(config: IConfig) {
+        Hal._dump$.pipe(debounceTime(config.autoDumpDebounceTime ? config.autoDumpDebounceTime : Hal.DEFAULT_AUTO_DUMP_DEBOUNCE_TIME)).subscribe(() => Hal.dump());
         Hal._http = config.http;
         Hal._storage = new HalStorage({
             storage: config.storage, 
-            prefix: config.prefix ? config.prefix : '',
-            dumpInterval: config.dumpInterval ? config.dumpInterval : 5000, // 5 sec
+            prefix: config.prefix ? config.prefix : ''
         });
+
         if (config.enableCache) {
             Hal.enableCache();
+        }
+
+        if (config.dumpInterval) {
+            this._initDumpTimer(config.dumpInterval);
+        }
+
+        if (config.autoDump !== undefined) {
+            Hal.enableAutoDump(config.autoDump);
         }
     }
 
@@ -42,7 +59,7 @@ export class Hal {
                 Hal._storage.attach(data._links.self.href, url);
                 Hal._storage.attach(data._links.self.href, data._links.self.href);
 
-                Hal._storage.setItem(data._links.self.href, data);
+                Hal.setItem(data._links.self.href, data);
 
                 resolve(data);
             });
@@ -119,10 +136,16 @@ export class Hal {
     }
     static setItem(origin: string, data: IResource) {
         Hal._storage.setItem(origin, data);
+        if (Hal._autoDump) {
+            Hal._dump$.next();
+        }
     }
 
     static removeItem(origin: string) {
         Hal._storage.removeItem(origin);
+        if (Hal._autoDump) {
+            Hal._dump$.next();
+        }
     }
 
     static attach(origin: string, alias: string) {
@@ -153,7 +176,12 @@ export class Hal {
     }
 
     static clear() {
+        Hal._removeDumpTimer();
         Hal._storage.clear();
+    }
+
+    static dump() {
+        Hal._storage.dump();
     }
 
     static hasCache(alias: string) {
@@ -187,5 +215,32 @@ export class Hal {
 
     static enableCache(enable: boolean = true) {
         Hal._enableCache = enable;
+    }
+
+    static enableAutoDump(enable: boolean = true) {
+        Hal._autoDump = enable;
+    }
+
+    private static _initDumpTimer(dumpInterval: number) {
+        Hal._dumpTimer$ = interval(dumpInterval);
+        Hal._dumpTimer = Hal._dumpTimer$.subscribe(time => {
+            Hal._dump$.next();
+        });
+    }
+
+    private static _removeDumpTimer() {
+        if (this._dumpTimer) {
+            this._dumpTimer.unsubscribe();
+        }
+        this._dumpTimer = null;
+        this._dumpTimer$ = null;
+    }
+
+    static get dumpTimer$() {
+        return Hal._dumpTimer$;
+    }
+
+    static get dump$() {
+        return Hal._dump$;
     }
 }

@@ -16,12 +16,10 @@ describe('Storage', () => {
             }));
             
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
             const aliases = storage.aliases;
-            storage.removeDumpTimer();
 
             expect(aliases).to.be.eqls({
                 '/me': '/me',
@@ -43,12 +41,10 @@ describe('Storage', () => {
             }));
             
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
             const origins = storage.origins;
-            storage.removeDumpTimer();
 
             expect(origins).to.be.eqls({
                 '/me':{
@@ -65,7 +61,6 @@ describe('Storage', () => {
             const fakeStorage = new FakeStorage;
 
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
@@ -79,8 +74,6 @@ describe('Storage', () => {
                 }
             };
 
-            storage.removeDumpTimer();
-            
             storage.attach('/me', '/me');
             storage.attach('/me', '/self');
             storage.attach('/me', '/other#res');
@@ -107,7 +100,6 @@ describe('Storage', () => {
             const fakeStorage = new FakeStorage;
 
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
@@ -124,29 +116,12 @@ describe('Storage', () => {
             })
 
             storage.clear();
-            storage.removeDumpTimer();
 
             expect(storage.aliases).to.be.eqls({});
             expect(storage.origins).to.be.eqls({});
             expect(storage.storage.getItem(storage.aliasesKey)).to.be.null;
             expect(storage.storage.getItem(storage.originsKey)).to.be.null;
 
-
-        });
-
-        it('should return remove dump timer', () => {
-            const fakeStorage = new FakeStorage;
-
-            const storage = new HalStorage({
-                dumpInterval: 1000,
-                prefix: 'hal_',
-                storage: fakeStorage
-            });
-            const spy = sinon.spy(storage, 'removeDumpTimer');
-            storage.clear();
-            storage.removeDumpTimer();
-
-            expect(spy).callCount(2);
 
         });
     });
@@ -156,7 +131,6 @@ describe('Storage', () => {
             const fakeStorage = new FakeStorage;
 
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
@@ -171,7 +145,6 @@ describe('Storage', () => {
 
             storage.setItem('test', data);
             const gotData = storage.getItem('test');
-            storage.removeDumpTimer();
 
             expect(gotData).to.be.eqls(data);
 
@@ -183,7 +156,6 @@ describe('Storage', () => {
             const fakeStorage = new FakeStorage;
 
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
@@ -199,7 +171,6 @@ describe('Storage', () => {
             storage.setItem('test', data);
             storage.removeItem('test');
             const gotData = storage.getItem('test');
-            storage.removeDumpTimer();
 
             expect(gotData).to.be.null;
         });
@@ -210,7 +181,6 @@ describe('Storage', () => {
             const fakeStorage = new FakeStorage;
 
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
@@ -223,8 +193,6 @@ describe('Storage', () => {
                     }
                 }
             };
-
-            storage.removeDumpTimer();
 
             storage.data$.pipe(first()).toPromise().then(data => {
                 expect(data.key).to.be.equal('/me');
@@ -240,7 +208,6 @@ describe('Storage', () => {
             const fakeStorage = new FakeStorage;
 
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
@@ -262,7 +229,6 @@ describe('Storage', () => {
                 }
             };
 
-            storage.removeDumpTimer();
             storage.attach('/me', '/other');
             storage.setItem('/me', newMe);
 
@@ -279,7 +245,6 @@ describe('Storage', () => {
             const fakeStorage = new FakeStorage;
 
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
@@ -301,7 +266,6 @@ describe('Storage', () => {
                 }
             };
 
-            storage.removeDumpTimer();
             storage.setItem('/me', newMe);
 
             expect(storage.getItem('/res')).to.be.eqls({
@@ -319,12 +283,10 @@ describe('Storage', () => {
             const fakeStorage = new FakeStorage;
 
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
 
-            storage.removeDumpTimer();
             storage.attach('/me', '/me');
             storage.attach('/me', '/other');
 
@@ -338,12 +300,10 @@ describe('Storage', () => {
             const fakeStorage = new FakeStorage;
 
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
 
-            storage.removeDumpTimer();
             storage.attach('/me', '/me');
             storage.attach('/me', '/other');
 
@@ -362,12 +322,10 @@ describe('Storage', () => {
             const fakeStorage = new FakeStorage;
 
             const storage = new HalStorage({
-                dumpInterval: 1000,
                 prefix: 'hal_',
                 storage: fakeStorage
             });
 
-            storage.removeDumpTimer();
             storage.attach('/me', '/me');
             storage.attach('/me', '/other');
             storage.attach('/me', '/go');
