@@ -7,7 +7,6 @@ import { Hal } from "./hal";
 export interface IHalStorageConfig {
     storage: Storage;
     prefix: string;
-    dumpInterval: number;
 }
 
 export interface IHalStorageAliases {
@@ -43,21 +42,16 @@ export class HalStorage {
     private _aliases: IHalStorageAliases;
     private _origins: IHalStorageOrigins;
     private _prefix: string;
-    private _dumpTimer$: Observable<number>;
-    private _dumpTimer: Subscription|null = null;
 
     constructor(config: IHalStorageConfig) {
         this._storage = config.storage;
         this._prefix = config.prefix;
-        this._dumpTimer$ = interval(config.dumpInterval);
 
         const aliases = this._storage.getItem(this.aliasesKey);
         this._aliases = aliases ? JSON.parse(aliases) : {};
 
         const origins = this._storage.getItem(this.originsKey);
         this._origins = origins ? JSON.parse(origins) : {};
-
-        this.initDumpTimer();
 
         this._data$.subscribe(event => {
             this._origins[event.key] = event.data;
@@ -67,21 +61,9 @@ export class HalStorage {
         });
     }
 
-    get dumpTimer$() {
-        return this._dumpTimer$;
-    }
-
-    initDumpTimer() {
-        this._dumpTimer = this._dumpTimer$.subscribe(time => {
-            this._storage.setItem(this.originsKey, JSON.stringify(this._origins));
-            this._storage.setItem(this.aliasesKey, JSON.stringify(this._aliases));
-        });
-    }
-
-    removeDumpTimer() {
-        if (this._dumpTimer) {
-            this._dumpTimer.unsubscribe();
-        }
+    dump() {
+        this._storage.setItem(this.originsKey, JSON.stringify(this._origins));
+        this._storage.setItem(this.aliasesKey, JSON.stringify(this._aliases));
     }
 
     get originsKey() {
@@ -114,7 +96,6 @@ export class HalStorage {
         this._origins = {};
         this._storage.removeItem(this.originsKey);
         this._storage.removeItem(this.aliasesKey);
-        this.removeDumpTimer();
     }
 
     getItem(origin: string): IResource | null {
